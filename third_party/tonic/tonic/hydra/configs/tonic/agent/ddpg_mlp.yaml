@@ -1,0 +1,32 @@
+_target_: tonic.torch.agents.DDPG
+model:
+  _target_: tonic.torch.models.ActorCriticWithTargets
+  actor:
+    _target_: tonic.torch.models.Actor
+    encoder:
+      _target_: tonic.torch.models.ObservationEncoder
+    torso:
+      _target_: tonic.torch.models.MLP
+      sizes: [256, 256]
+      activation:
+        _target_: torch.nn.ReLU
+        _partial_: true
+    head:
+      _target_: tonic.torch.models.DeterministicPolicyHead
+  critic:
+    _target_: tonic.torch.models.Critic
+    encoder:
+      _target_: tonic.torch.models.ObservationActionEncoder
+    torso:
+      _target_: tonic.torch.models.MLP
+      sizes: [256, 256]
+      activation:
+        _target_: torch.nn.ReLU
+        _partial_: true
+    head:
+      _target_: tonic.torch.models.ValueHead
+  observation_normalizer:
+    _target_: tonic.torch.normalizers.MeanStd
+replay:
+  _target_: tonic.replays.Buffer
+  return_steps: 5

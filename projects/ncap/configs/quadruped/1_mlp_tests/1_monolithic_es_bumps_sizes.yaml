@@ -1,0 +1,26 @@
+# @package _global_
+# Train monolithic architecture with ES algorithm.
+name: quadruped/1_mlp_tests/1_monolithic_es
+
+hydra:
+  sweeper:
+    params:
+      quadruped/robot/obs@robot: legs_feet
+      quadruped/arena@arena: bumps
+      quadruped/model/es@model: monolithic_ff_mlpDxD_zeroall
+      actor_hidden_size: 4, 8, 16, 32, 64, 128
+      target_vx: 0.5
+      seed: range(1, 11)
+
+actor_hidden_size: 256
+
+compute:
+  # arena=bumps
+  mem: 32
+  time: ${prod:60,11}
+
+defaults:
+  - /quadruped/1_mlp_tests/0_base_es
+  - /quadruped/robot/obs@robot: legs_feet
+  - /quadruped/model/es@model: monolithic_ff_mlp256x256_zeroall
+  - _self_

@@ -1,0 +1,2 @@
+_target_: projects.ncap.src.quadruped.models.monolithic_ff_ppo
+actor_hidden_sizes: [256]

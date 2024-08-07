@@ -1,0 +1,92 @@
+_target_: projects.ncap.src.quadruped.models.modular_es
+pattern_formation:
+  _target_: projects.ncap.src.quadruped.models.PatternFormationNetwork
+  net:
+    _target_: projects.ncap.src.quadruped.models.LimbSubnetwork
+    torso: null
+    head:
+      _target_: tonic.torch.models.DeterministicPolicyHead
+      activation:
+        _target_: torch.nn.Tanh
+        _partial_: true
+      bias: false
+      fn:
+        _target_: projects.ncap.src.quadruped.models.init_pf_flxext
+        _partial_: true
+        repeat: ${....repeat}
+        mode: ${....mode}
+        constrain: true
+  mode: share-cross
+  repeat: 8
+rhythm_generation:
+  _target_: projects.ncap.src.quadruped.models.RhythmGenerationCircuit
+  init:
+    _target_: projects.ncap.src.quadruped.models.init_rg_default
+    _partial_: true
+    grad: false
+afferent_feedback:
+  _target_: projects.ncap.src.quadruped.models.AfferentFeedbackNetwork
+  net:
+    _target_: projects.ncap.src.quadruped.models.LimbSubnetwork
+    torso: null
+    head:
+      _target_: tonic.torch.models.DeterministicPolicyHead
+      activation:
+        _target_: torch.nn.Identity
+        _partial_: true
+      bias: false
+      fn:
+        _target_: projects.ncap.src.quadruped.models.init_zeros
+        _partial_: true
+  mode: share-cross
+  repeat: 8
+  repeat_agg: sum
+  rectify: true
+  init:
+    _target_: projects.ncap.src.quadruped.models.init_af_flxext
+    _partial_: true
+    constrain: true
+    flx_ipsi: {}
+    ext_ipsi: {}
+    flx_contra: {}
+    ext_contra: {}
+brainstem_command:
+  _target_: projects.ncap.src.quadruped.models.BrainstemCommandSignal
+  command: 0.5
+  grad: true
+  repeat: 1
+  repeat_agg: sum
+constrainer: true
+observation_normalizer:
+  _target_: projects.ncap.src.quadruped.models.UnflatNormalizer
+  normalizer_builder:
+    a1/joints_pos:
+      _target_: tonic.torch.normalizers.NegPos
+      min: [-0.15, -0.60, -2.00, -0.15, -0.60, -2.00, -0.15, -0.30, -2.00, -0.15, -0.30, -2.00]
+      mid: [+0.00, +0.40, -1.20, +0.00, +0.40, -1.20, +0.00, +0.70, -1.20, +0.00, +0.70, -1.20]
+      max: [+0.15, +1.20, -0.92, +0.15, +1.20, -0.92, +0.15, +1.50, -0.92, +0.15, +1.50, -0.92]
+      freeze: true
+    a1/joints_trq:
+      _target_: tonic.torch.normalizers.NegPos
+      min: -33.5
+      mid: 0
+      max: +33.5
+      freeze: true
+    a1/joints_vel:
+      _target_: tonic.torch.normalizers.NegPos
+      min: -15
+      mid: 0
+      max: +15
+      freeze: true
+    a1/sensors_foot:
+      _target_: tonic.torch.normalizers.NegPos
+      min: 0
+      mid: 0
+      max: 50
+      freeze: true
+    target_vx:
+      _target_: tonic.torch.normalizers.NegPos
+      min: 0
+      mid: 0
+      max: 2
+      freeze: true

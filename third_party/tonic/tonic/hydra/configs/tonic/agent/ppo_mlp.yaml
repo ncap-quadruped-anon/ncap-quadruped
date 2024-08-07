@@ -1,0 +1,29 @@
+_target_: tonic.torch.agents.PPO
+model:
+  _target_: tonic.torch.models.ActorCritic
+  actor:
+    _target_: tonic.torch.models.Actor
+    encoder:
+      _target_: tonic.torch.models.ObservationEncoder
+    torso:
+      _target_: tonic.torch.models.MLP
+      sizes: [64, 64]
+      activation:
+        _target_: torch.nn.Tanh
+        _partial_: true
+    head:
+      _target_: tonic.torch.models.DetachedScaleGaussianPolicyHead
+  critic:
+    _target_: tonic.torch.models.Critic
+    encoder:
+      _target_: tonic.torch.models.ObservationEncoder
+    torso:
+      _target_: tonic.torch.models.MLP
+      sizes: [64, 64]
+      activation:
+        _target_: torch.nn.Tanh
+        _partial_: true
+    head:
+      _target_: tonic.torch.models.ValueHead
+  observation_normalizer:
+    _target_: tonic.torch.normalizers.MeanStd

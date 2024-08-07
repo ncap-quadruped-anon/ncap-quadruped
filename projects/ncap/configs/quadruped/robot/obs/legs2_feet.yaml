@@ -1,0 +1,28 @@
+# Action space = position setpoint + delta.
+# Observation space = legs (proprioceptive, 2 DOFs thigh+calf), feet (tactile).
+_target_: envs.quadruped.robots.UnitreeA1Constrained
+include_trq: false
+include_pos: true
+include_vel: false
+kp: 60
+kd: 10
+pos_init: [+0.00, +0.40, -1.20, +0.00, +0.40, -1.20, +0.00, +0.70, -1.20, +0.00, +0.70, -1.20]
+pos_transform:
+  _target_: envs.quadruped.robots.SetpointDeltaTransform
+  min: [-0.15, -0.60, -2.00, -0.15, -0.60, -2.00, -0.15, -0.30, -2.00, -0.15, -0.30, -2.00]
+  mid: [+0.00, +0.40, -1.20, +0.00, +0.40, -1.20, +0.00, +0.70, -1.20, +0.00, +0.70, -1.20]
+  max: [+0.15, +1.20, -0.92, +0.15, +1.20, -0.92, +0.15, +1.50, -0.92, +0.15, +1.50, -0.92]
+pos_constraints: [0, null, null, 0, null, null, 0, null, null, 0, null, null]
+observable_options:
+  joints_pos: { enabled: True }
+  joints_trq: { enabled: True }
+  joints_vel: { enabled: True }
+  sensors_foot: { enabled: True }
+  sensors_rollpitch: { enabled: False } # angular pos
+  sensors_gyro: { enabled: False } # angular vel
+  sensors_velocimeter: { enabled: False } # linear vel
+  sensors_accelerometer: { enabled: False } # linear acc
+  sensors_euler: { enabled: False }
+  sensors_framequat: { enabled: False }
+  time: { enabled: False }
+model_xml_path: third_party/mujoco_menagerie/unitree_a1/a1_torque_2.xml

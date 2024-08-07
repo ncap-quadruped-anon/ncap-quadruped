@@ -1,0 +1,15 @@
+header: null
+agent: ???
+environment: ???
+test_environment: null
+trainer:
+  _target_: tonic.Trainer
+  show_progress: false
+before_training: null
+after_training: null
+parallel: 1
+sequential: 1
+seed: 0
+output_dir: null
+checkpoint_output_dir: null
+checkpoint_id: 'none'

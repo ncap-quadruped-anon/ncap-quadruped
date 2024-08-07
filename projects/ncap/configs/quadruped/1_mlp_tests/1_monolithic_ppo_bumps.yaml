@@ -1,0 +1,23 @@
+# @package _global_
+# Train monolithic architecture with PPO algorithm.
+name: quadruped/1_mlp_tests/1_monolithic_ppo
+
+hydra:
+  sweeper:
+    params:
+      quadruped/robot/obs@robot: legs_feet
+      quadruped/arena@arena: bumps
+      quadruped/model/ppo@model: monolithic_ff_mlp256x256
+      target_vx: 0.5, 1.0
+      seed: range(1, 11)
+
+compute:
+  # arena=bumps
+  mem: 16
+  time: ${prod:60,37}
+
+defaults:
+  - /quadruped/1_mlp_tests/0_base_ppo
+  - /quadruped/robot/obs@robot: legs_feet
+  - /quadruped/model/ppo@model: monolithic_ff_mlp256x256
+  - _self_

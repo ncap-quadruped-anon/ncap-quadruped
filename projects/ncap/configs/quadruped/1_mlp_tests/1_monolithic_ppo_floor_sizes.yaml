@@ -1,0 +1,26 @@
+# @package _global_
+# Train monolithic architecture with PPO algorithm.
+name: quadruped/1_mlp_tests/1_monolithic_ppo
+
+hydra:
+  sweeper:
+    params:
+      quadruped/robot/obs@robot: legs_feet
+      quadruped/arena@arena: floor
+      quadruped/model/ppo@model: monolithic_ff_mlpD, monolithic_ff_mlpDxD
+      actor_hidden_size: 4, 8, 16, 32, 64, 128
+      target_vx: 0.5
+      seed: range(1, 11)
+
+actor_hidden_size: 256
+
+compute:
+  # arena=floor
+  mem: 16
+  time: ${prod:60,24}
+
+defaults:
+  - /quadruped/1_mlp_tests/0_base_ppo
+  - /quadruped/robot/obs@robot: legs_feet
+  - /quadruped/model/ppo@model: monolithic_ff_mlpDxD
+  - _self_

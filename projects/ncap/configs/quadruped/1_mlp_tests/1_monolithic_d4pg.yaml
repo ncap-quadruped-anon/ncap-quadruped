@@ -1,0 +1,18 @@
+# @package _global_
+# Train monolithic architecture with D4PG algorithm.
+name: quadruped/1_mlp_tests/1_monolithic_d4pg
+
+hydra:
+  sweeper:
+    params:
+      quadruped/robot/obs@robot: legs_feet
+      quadruped/arena@arena: bumps
+      quadruped/model/d4pg@model: monolithic_ff_mlp256x256
+      target_vx: 0.5, 1.0
+      seed: range(1, 11)
+
+defaults:
+  - /quadruped/1_mlp_tests/0_base_d4pg
+  - /quadruped/robot/obs@robot: legs_feet
+  - /quadruped/model/d4pg@model: monolithic_ff_mlp256x256
+  - _self_

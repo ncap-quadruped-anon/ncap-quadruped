@@ -1,0 +1,6 @@
+_target_: envs.quadruped.tasks.MoveAtFixedVelocity_WalkInThePark
+robot: ???
+target_vx: 0.5 # [m/s]
+
+reward_vx: 1.0
+punish_wz: 0.1

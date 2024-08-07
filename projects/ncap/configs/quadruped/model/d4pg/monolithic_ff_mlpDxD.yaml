@@ -1,0 +1,3 @@
+_target_: projects.ncap.src.quadruped.models.monolithic_ff_d4pg
+actor_hidden_sizes: ['${actor_hidden_size}', '${actor_hidden_size}']
+critic_value_distribution: ${value_distribution}

@@ -1,0 +1,96 @@
+# @package _global_
+# Train modular architecture with ES algorithm. Use biologically plausible AF observation space
+# (rectify, sign constraints w/ magnitude and zeros, AF init improved, PF init improve).
+name: quadruped/2_ncap_tests/1_modular_es
+
+hydra:
+  sweeper:
+    params:
+      quadruped/arena@arena: bumps
+      quadruped/robot/obs@robot: legs2_feet
+      quadruped/model/es@model: modular_pfrepinit_rg_afrepbioinit_bcrep
+
+      bc_command: 0.3
+      target_vx: 0.5
+
+      seed: range(1, 11)
+
+defaults:
+  - /quadruped/2_ncap_tests/0_base_es
+  - /quadruped/robot/obs@robot: legs2_feet
+  - /quadruped/model/es@model: modular_pfrepinit_rg_afrepbioinit_bcrep
+  - _self_
+
+rg_grad: false
+af_repeat: 8
+af_rectify: true
+bc_command: 0.1
+bc_repeat: 8
+bc_grad: false
+pf_mag: false
+pf_zero: false
+af_mag: false
+af_zero: false
+
+algorithm:
+  mutation_scale: 0.1
+  parameter_decay: 0.01
+
+objective:
+  env_builder:
+    # Use unflattened dict observations/actions.
+    flatten: false
+
+trainer:
+  epochs: 1000
+  save_freq: 100
+
+model:
+  pattern_formation:
+    ignore: ['a1/joints_pos', 'a1/joints_trq', 'a1/joints_vel', 'a1/sensors_foot']
+    net:
+      head:
+        bias: true
+        fn:
+          _target_: projects.ncap.src.quadruped.models.init_pf_flxext
+          _partial_: true
+          flx: [-0.5, -0.2]
+          ext: [0.3, 0.8]
+          constrain:
+            _target_: projects.ncap.src.quadruped.models.constrain_sign
+            _partial_: true
+            magnitude: ${pf_mag}
+            zero: ${pf_zero}
+  rhythm_generation:
+    init:
+      _target_: projects.ncap.src.quadruped.models.init_rg_default
+      _partial_: true
+      grad: ${rg_grad}
+  afferent_feedback:
+    repeat: ${af_repeat}
+    rectify: ${af_rectify}
+    init:
+      _target_: projects.ncap.src.quadruped.models.init_af_flxext
+      _partial_: true
+      flx_ipsi:
+        a1/joints_pos: [0, 0, 0, 0, 1, 0] # [hip-, thigh-, calf-, hip+, thigh+, calf+]
+        a1/joints_trq: [0, 0, -1, -1, -1, 0] # [hip-, thigh-, calf-, hip+, thigh+, calf+]
+        a1/sensors_foot: [0, -1] # [foot-, foot+]
+      ext_ipsi:
+        a1/joints_pos: [0, 1, 0, 0, 0, 0] # [hip-, thigh-, calf-, hip+, thigh+, calf+]
+        a1/joints_trq: [0, 0, 1, 1, 1, 0] # [hip-, thigh-, calf-, hip+, thigh+, calf+]
+        a1/sensors_foot: [0, 1] # [foot-, foot+]
+      constrain:
+        _target_: projects.ncap.src.quadruped.models.constrain_sign
+        _partial_: true
+        magnitude: ${af_mag}
+        zero: ${af_zero}
+  brainstem_command:
+    command: ${bc_command}
+    repeat: ${bc_repeat}
+    grad: ${bc_grad}
+
+compute:
+  # arena=bumps
+  mem: 32
+  time: ${prod:60,11}

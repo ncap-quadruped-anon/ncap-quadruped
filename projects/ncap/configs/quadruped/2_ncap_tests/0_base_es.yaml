@@ -1,0 +1,72 @@
+# @package _global_
+# Train architecture with ES algorithm.
+name: ???
+
+defaults:
+  - /infra/base
+  - /quadruped/arena@arena: floor
+  - /quadruped/task@task: walk_witp
+  - _self_
+
+# ====================
+robot: ???
+model:
+  _partial_: true
+# ====================
+
+seed: 0
+target_vx: 0.5
+arena: ???
+
+task:
+  robot: ${robot}
+  arena: ${arena}
+  target_vx: ${target_vx}
+  termination_roll: 45
+  termination_pitch: 45
+  ground_friction:
+    _target_: dm_control.composer.variation.distributions.Uniform
+    low: [0.75, 0.005, 0.0001]
+    high: [1.25, 0.005, 0.0001]
+wrappers: []
+
+objective:
+  _target_: projects.ncap.src.evolution.TonicTorchRollout
+
+  env_builder:
+    _partial_: true
+    _target_: tonic.environments.Composer
+    env:
+      _target_: dm_control.composer.Environment
+      task: ${task}
+      time_limit: 15
+    wrappers: ${wrappers}
+    # Already scaling actions in `robot.pos_transform`. Besides, the Tonic scaling function performs a suboptimal
+    # 2-point interpolation (min, max) vs. our 3-point interpolation (min, mid, max) that allows for asymmetric
+    # joint ranges (where neutral posture is not exactly midway).
+    scaled_actions: false
+
+  model_builder: ${model}
+
+algorithm:
+  _target_: evolution.algos.AugmentedRandomSearchEvolutionStrategy
+  population_size: 32
+  mutation_scale: 0.02
+  parameter_decay: 0.0
+
+trainer:
+  _target_: evolution.Trainer
+  seed: ${seed}
+  epochs: 1000
+  save_freq: 200
+  test_freq: 1
+  test_size: 5
+  num_workers: ${sum:${compute.cpu},-1}
+
+output_dir: ${hydra:runtime.output_dir}
+
+compute:
+  cpu: 33
+  gpu: 0
+  mem: 16
+  time: ${prod:60,6} # 6h
